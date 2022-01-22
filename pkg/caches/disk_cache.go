@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
-	"crypto/rand"
 	"fmt"
 	repb "github.com/bazelbuild/remote-apis/build/bazel/remote/execution/v2"
 	"github.com/dashjay/bazel-remote-exec/pkg/interfaces"
+	"github.com/dashjay/bazel-remote-exec/pkg/utils"
 	"github.com/dashjay/bazel-remote-exec/pkg/utils/lru"
 	"github.com/sirupsen/logrus"
 	"io"
@@ -178,12 +178,10 @@ func (c *DiskCache) Set(ctx context.Context, d *repb.Digest, data []byte) error 
 	return nil
 }
 func WriteFile(ctx context.Context, fullPath string, data []byte) (int64, error) {
-	randStr, err := RandomString(10)
-	if err != nil {
-		return 0, err
-	}
+	randStr := utils.RandomString(10)
+
 	tmpFileName := fmt.Sprintf("%s.%s.tmp", fullPath, randStr)
-	err = os.MkdirAll(filepath.Dir(fullPath), 0644)
+	err := os.MkdirAll(filepath.Dir(fullPath), 0644)
 	if err != nil {
 		return 0, err
 	}
@@ -203,19 +201,6 @@ func deleteLocalFileIfExists(filename string) {
 			logrus.Warningf("Error deleting file %q: %s", filename, err)
 		}
 	}
-}
-
-func RandomString(stringLength int) (string, error) {
-	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-	bytes := make([]byte, stringLength)
-	if _, err := rand.Read(bytes); err != nil {
-		return "", err
-	}
-	// Run through bytes; replacing each with the equivalent random char.
-	for i, b := range bytes {
-		bytes[i] = letters[b%byte(len(letters))]
-	}
-	return string(bytes), nil
 }
 
 func (c *DiskCache) SetMulti(ctx context.Context, kvs map[*repb.Digest][]byte) error {

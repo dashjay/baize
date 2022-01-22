@@ -3,10 +3,7 @@ package caches
 import (
 	"bytes"
 	"context"
-	"crypto/rand"
-	"crypto/sha256"
-	"encoding/hex"
-	repb "github.com/bazelbuild/remote-apis/build/bazel/remote/execution/v2"
+	"github.com/dashjay/bazel-remote-exec/pkg/utils"
 	"os"
 	"testing"
 )
@@ -17,13 +14,13 @@ func TestDiskCache(t *testing.T) {
 	defer os.Remove(tempdir)
 	dc := NewDiskCache(tempdir, 65536)
 	ctx := context.Background()
-	rBytes := randomBytes(400)
-	err := dc.Set(ctx, genSha256(rBytes), rBytes)
+	rBytes := utils.RandomBytes(400)
+	err := dc.Set(ctx, utils.CalSHA256OfInnput(rBytes), rBytes)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	b, err := dc.Get(ctx, genSha256(rBytes))
+	b, err := dc.Get(ctx, utils.CalSHA256OfInnput(rBytes))
 	if err != nil {
 		t.Error(err)
 	}
@@ -41,42 +38,22 @@ func BenchmarkDiskCache(t *testing.B) {
 	const LENGTH = 4000
 	var prepare = [LENGTH][]byte{}
 	for i := 0; i < LENGTH; i++ {
-		prepare[i] = randomBytes(400)
+		prepare[i] = utils.RandomBytes(400)
 	}
 
 	t.Run("Set", func(b *testing.B) {
 		b.StartTimer()
 		ctx := context.Background()
 		for i := 0; i < len(prepare); i++ {
-			err := dc.Set(ctx, genSha256(prepare[i]), prepare[i])
+			err := dc.Set(ctx, utils.CalSHA256OfInnput(prepare[i]), prepare[i])
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			_, _ = dc.Get(ctx, genSha256(prepare[i]))
+			_, _ = dc.Get(ctx, utils.CalSHA256OfInnput(prepare[i]))
 		}
 		b.StopTimer()
 	})
 
 	t.Logf("Current Size: %d", dc.lru.Size())
-}
-
-func genSha256(input []byte) *repb.Digest {
-	h := sha256.New()
-	h.Write(input)
-	return &repb.Digest{Hash: hex.EncodeToString(h.Sum(nil)), SizeBytes: int64(len(input))}
-}
-
-func randomBytes(stringLength int) []byte {
-	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-	length := len(letters)
-	output := make([]byte, stringLength)
-	if _, err := rand.Read(output); err != nil {
-		panic(err)
-	}
-	// Run through output; replacing each with the equivalent random char.
-	for i, b := range output {
-		output[i] = letters[b%byte(length)]
-	}
-	return output
 }
