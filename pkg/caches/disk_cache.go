@@ -44,7 +44,6 @@ func NewDiskCache(rootDir string, maxSizeBytes int64) *DiskCache {
 
 	d := &DiskCache{
 		rootDir: rootDir,
-		//prefixMutex:                 make(map[string]*sync.Mutex),
 		maxSizeBytes:                maxSizeBytes,
 		finishLoadingFromFileSystem: make(chan struct{}),
 	}

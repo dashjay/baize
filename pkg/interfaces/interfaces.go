@@ -32,7 +32,6 @@ type LRU interface {
 	RemoveOldest() (interface{}, bool)
 }
 
-
 type Cache interface {
 	Contains(ctx context.Context, d *repb.Digest) (bool, error)
 	FindMissing(ctx context.Context, digests []*repb.Digest) ([]*repb.Digest, error)
@@ -44,4 +43,12 @@ type Cache interface {
 
 	Reader(ctx context.Context, d *repb.Digest, offset int64) (io.ReadCloser, error)
 	Writer(ctx context.Context, d *repb.Digest) (io.WriteCloser, error)
+}
+
+type ActionCache interface {
+	GetActionResultFromDigest(context.Context, *repb.Digest) (*repb.ActionResult, error)
+	PutActionResultByDigest(context.Context, *repb.Digest, *repb.ActionResult) error
+	GetActionFromDigest(context.Context, *repb.Digest) (*repb.Action, error)
+	GetCommandFromDigest(context.Context, *repb.Digest) (*repb.Command, error)
+	GetDirectoryFromDigest(context.Context, *repb.Digest) (*repb.Directory, error)
 }
