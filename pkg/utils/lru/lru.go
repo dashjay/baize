@@ -3,6 +3,7 @@ package lru
 import (
 	"container/list"
 	"github.com/dashjay/bazel-remote-exec/pkg/interfaces"
+	"sync"
 )
 
 type RemoveFn func(key string, value interface{})
@@ -21,6 +22,7 @@ type Entry struct {
 	Value interface{}
 }
 type LRU struct {
+	sync.RWMutex
 	items       list.List
 	itemsMap    map[string]*list.Element
 	sizeFn      SizeFn
@@ -104,6 +106,8 @@ func (l *LRU) Remove(key string) bool {
 }
 
 func (l *LRU) Purge() {
+	l.Lock()
+	defer l.Unlock()
 	for k := range l.itemsMap {
 		if l.removeFn != nil {
 			l.removeFn(k, l.itemsMap[k])
@@ -127,6 +131,8 @@ func (l *LRU) RemoveOldest() (interface{}, bool) {
 }
 
 func (l *LRU) lookupItem(key string) (*list.Element, bool) {
+	l.RLock()
+	defer l.RUnlock()
 	ele, ok := l.itemsMap[key]
 	return ele, ok
 }
@@ -144,6 +150,8 @@ func (l *LRU) addItem(key string, value interface{}, front bool) {
 	} else {
 		element = l.items.PushBack(ent)
 	}
+	l.Lock()
+	defer l.Unlock()
 	l.itemsMap[key] = element
 	l.currentSize += l.sizeFn(key, value)
 }
@@ -161,9 +169,14 @@ func (l *LRU) removeElement(e *list.Element) {
 	l.items.Remove(e)
 	ent := e.Value.(*Entry)
 	l.currentSize -= l.sizeFn(ent.Key, ent.Value)
-	for k, ele := range l.itemsMap {
+	l.RLock()
+	m := l.itemsMap
+	l.RUnlock()
+	for k, ele := range m {
 		if ele == e {
+			l.Lock()
 			delete(l.itemsMap, k)
+			l.Unlock()
 		}
 	}
 	if l.removeFn != nil {

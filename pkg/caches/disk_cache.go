@@ -6,14 +6,17 @@ import (
 	"context"
 	"fmt"
 	repb "github.com/bazelbuild/remote-apis/build/bazel/remote/execution/v2"
+	"github.com/dashjay/bazel-remote-exec/pkg/config"
 	"github.com/dashjay/bazel-remote-exec/pkg/interfaces"
-	"github.com/dashjay/bazel-remote-exec/pkg/utils"
+	"github.com/dashjay/bazel-remote-exec/pkg/utils/disk_utils"
 	"github.com/dashjay/bazel-remote-exec/pkg/utils/lru"
 	"github.com/sirupsen/logrus"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -22,40 +25,84 @@ const (
 )
 
 type DiskCache struct {
-	rootDir string
-	//prefixMutex                 map[string]*sync.Mutex
+	rootDir                     string
 	lru                         interfaces.LRU
 	maxSizeBytes                int64
 	finishLoadingFromFileSystem chan struct{}
 }
+
 type fileRecord struct {
 	lastUseTime int64
 	digest      *repb.Digest
 	sizeBytes   int64
 }
 
-func NewDiskCache(rootDir string, maxSizeBytes int64) *DiskCache {
-	if rootDir == "" {
+func NewDiskCache(cfg *config.Cache) *DiskCache {
+	if cfg.CacheAddr == "" {
 		logrus.Panic("empty rootDir")
 	}
-	if maxSizeBytes < 0 {
+	if cfg.CacheSize < 0 {
 		logrus.Panic("minus maxByteSize")
 	}
 
 	d := &DiskCache{
-		rootDir: rootDir,
-		maxSizeBytes:                maxSizeBytes,
+		rootDir:                     cfg.CacheAddr,
+		maxSizeBytes:                cfg.CacheSize,
 		finishLoadingFromFileSystem: make(chan struct{}),
 	}
 
 	l := lru.NewLRU(&lru.Config{
-		MaxSize:  maxSizeBytes,
+		MaxSize:  cfg.CacheSize,
 		RemoveFn: d.OnRemove,
 		SizeFn:   d.SizeFn,
 		AddFn:    nil,
 	})
 	d.lru = l
+	go d.loadingFromFileSystem()
+	<-d.finishLoadingFromFileSystem
 	return d
+}
+
+func (c *DiskCache) loadingFromFileSystem() {
+	logrus.Infof("rebuild index of rootDir %s", c.rootDir)
+	err := filepath.WalkDir(c.rootDir, func(path string, info fs.DirEntry, err error) error {
+		logrus.Infof("scan file %s", path)
+		if info == nil {
+			return nil
+		}
+		if info.IsDir() {
+			return nil
+		}
+		fi, err := info.Info()
+		if err != nil {
+			return err
+		}
+		secSlash := 0
+		lastSlash := strings.LastIndex(path, "/")
+		for i := lastSlash - 1; i > 0; i++ {
+			if path[i] == '/' {
+				secSlash = i
+				break
+			}
+		}
+		if secSlash == 0 {
+			return fmt.Errorf("can not handle file path %s", path)
+		}
+		digest := strings.ReplaceAll(path[secSlash+1:], "/", "")
+		fr := &fileRecord{
+			lastUseTime: time.Now().Unix(),
+			digest:      &repb.Digest{Hash: digest, SizeBytes: fi.Size()},
+			sizeBytes:   fi.Size(),
+		}
+		if !c.lru.Add(digest, fr) {
+			return fmt.Errorf("add %s error", digest)
+		}
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
+	c.finishLoadingFromFileSystem <- struct{}{}
 }
 func (c *DiskCache) OnRemove(key string, value interface{}) {
 	if v, ok := value.(*fileRecord); ok {
@@ -94,11 +141,11 @@ func (c *DiskCache) FindMissing(ctx context.Context, digests []*repb.Digest) ([]
 func (c *DiskCache) Get(ctx context.Context, d *repb.Digest) ([]byte, error) {
 	v, exists := c.lru.Get(d.Hash)
 	if !exists {
-		return nil, os.ErrNotExist
+		return nil, errNotFound{key: d.Hash}
 	}
 	ent, ok := v.(*lru.Entry)
 	if !ok || ent == nil {
-		return nil, os.ErrNotExist
+		return nil, errNotFound{key: d.Hash}
 	}
 	digest := ent.Value.(*fileRecord).digest
 	fullPath := filepath.Join(c.rootDir, digest.Hash[:HashPrefixDirPrefixLen], digest.Hash[HashPrefixDirPrefixLen:])
@@ -148,7 +195,7 @@ func (c *DiskCache) GetMulti(ctx context.Context, digests []*repb.Digest) (map[*
 
 func (c *DiskCache) Set(ctx context.Context, d *repb.Digest, data []byte) error {
 	fullPath := filepath.Join(c.rootDir, d.Hash[:HashPrefixDirPrefixLen], d.Hash[HashPrefixDirPrefixLen:])
-	_, exists := c.lru.Get(d.Hash)
+	_, exists := c.lru.Get(d.GetHash())
 	if exists {
 		return nil
 	}
@@ -162,7 +209,7 @@ func (c *DiskCache) Set(ctx context.Context, d *repb.Digest, data []byte) error 
 	if err != nil {
 		return err
 	}
-	siz, err := WriteFile(ctx, fullPath, buf.Bytes())
+	siz, err := disk_utils.WriteFile(ctx, fullPath, buf.Bytes())
 	if err != nil {
 		return err
 	}
@@ -176,31 +223,6 @@ func (c *DiskCache) Set(ctx context.Context, d *repb.Digest, data []byte) error 
 	}
 	return nil
 }
-func WriteFile(ctx context.Context, fullPath string, data []byte) (int64, error) {
-	randStr := utils.RandomString(10)
-
-	tmpFileName := fmt.Sprintf("%s.%s.tmp", fullPath, randStr)
-	err := os.MkdirAll(filepath.Dir(fullPath), 0644)
-	if err != nil {
-		return 0, err
-	}
-
-	defer deleteLocalFileIfExists(tmpFileName)
-
-	if err := ioutil.WriteFile(tmpFileName, data, 0644); err != nil {
-		return 0, err
-	}
-	return int64(len(data)), os.Rename(tmpFileName, fullPath)
-}
-
-func deleteLocalFileIfExists(filename string) {
-	_, err := os.Stat(filename)
-	if err == nil {
-		if err := os.Remove(filename); err != nil {
-			logrus.Warningf("Error deleting file %q: %s", filename, err)
-		}
-	}
-}
 
 func (c *DiskCache) SetMulti(ctx context.Context, kvs map[*repb.Digest][]byte) error {
 	for k := range kvs {
@@ -213,8 +235,8 @@ func (c *DiskCache) SetMulti(ctx context.Context, kvs map[*repb.Digest][]byte) e
 }
 
 func (c *DiskCache) Delete(ctx context.Context, d *repb.Digest) error {
-	if c.lru.Remove(d.Hash) {
-		return fmt.Errorf("remove %s success", d)
+	if c.lru.Remove(d.GetHash()) {
+		return fmt.Errorf("remove %s success", d.GetHash())
 	}
 	return nil
 }

@@ -1,0 +1,22 @@
+debug:
+  log_level: "debug"
+
+executor:
+  listen_addr: ":8080"
+  work_dir: "/Users/kevin/Desktop/bazel-tmp"
+
+caches:
+  inmemory_cache:
+    enabled: true
+    cache_size: 1073741824 # 1024 * 1024 * 1024
+
+  disk_cache:
+    enabled: true
+    cache_addr: "/Users/kevin/Desktop/bazel-cache"
+    cache_size: 8589934592 # 1024 * 1024 * 1024 * 8
+
+  redis_cache:
+    enabled: true
+    cache_addr: "0.0.0.0:6379"
+    cache_size: 4294967296 # 1024 * 1024 * 1024 * 4
+

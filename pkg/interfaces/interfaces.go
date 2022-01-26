@@ -40,15 +40,6 @@ type Cache interface {
 	Set(ctx context.Context, d *repb.Digest, data []byte) error
 	SetMulti(ctx context.Context, kvs map[*repb.Digest][]byte) error
 	Delete(ctx context.Context, d *repb.Digest) error
-
 	Reader(ctx context.Context, d *repb.Digest, offset int64) (io.ReadCloser, error)
 	Writer(ctx context.Context, d *repb.Digest) (io.WriteCloser, error)
-}
-
-type ActionCache interface {
-	GetActionResultFromDigest(context.Context, *repb.Digest) (*repb.ActionResult, error)
-	PutActionResultByDigest(context.Context, *repb.Digest, *repb.ActionResult) error
-	GetActionFromDigest(context.Context, *repb.Digest) (*repb.Action, error)
-	GetCommandFromDigest(context.Context, *repb.Digest) (*repb.Command, error)
-	GetDirectoryFromDigest(context.Context, *repb.Digest) (*repb.Directory, error)
 }
