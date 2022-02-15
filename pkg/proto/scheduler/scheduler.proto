@@ -1,0 +1,24 @@
+syntax = "proto3";
+option go_package = "github.com/dashjay/baize/pkg/proto/scheduler;scheduler";
+
+import "google/rpc/status.proto";
+
+package scheduler;
+
+message Property {
+    int32 Cpu = 1;
+    int64 Memory = 2;
+}
+
+message RegisterExecutorRequest {
+    Property executor_info = 1;
+    string executor_addr = 2;
+}
+
+message RegisterExecutorResponse{
+    google.rpc.Status status = 1;
+}
+
+service Scheduler{
+    rpc Register(RegisterExecutorRequest) returns (RegisterExecutorResponse){}
+}

@@ -4,13 +4,24 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
+	"io"
+
 	repb "github.com/bazelbuild/remote-apis/build/bazel/remote/execution/v2"
 )
 
-func CalSHA256OfInnput(input []byte) *repb.Digest {
+func CalSHA256OfInput(input []byte) *repb.Digest {
 	h := sha256.New()
 	h.Write(input)
 	return &repb.Digest{Hash: hex.EncodeToString(h.Sum(nil)), SizeBytes: int64(len(input))}
+}
+
+func CalSHA256FromReader(r io.Reader) (*repb.Digest, error) {
+	h := sha256.New()
+	n, err := io.Copy(h, r)
+	if err != nil {
+		return nil, err
+	}
+	return &repb.Digest{Hash: hex.EncodeToString(h.Sum(nil)), SizeBytes: n}, nil
 }
 
 func RandomBytes(byteLength int) []byte {
@@ -27,6 +38,6 @@ func RandomBytes(byteLength int) []byte {
 	return output
 }
 
-func RandomString(stringLength int)string{
+func RandomString(stringLength int) string {
 	return string(RandomBytes(stringLength))
 }

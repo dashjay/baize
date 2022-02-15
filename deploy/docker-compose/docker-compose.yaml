@@ -1,0 +1,20 @@
+version: "3"
+
+volumes:
+  baize_cache:
+    driver: local
+services:
+  bazel-server:
+    image: dashjay/baize-server:${STABLE_DOCKER_TAG:-dev}
+    ports:
+      - "8080:8080"
+      - "8082:8082"
+    volumes:
+      - baize_cache:/data/cache
+      - ./config.toml:/config.toml
+  bazel-executor:
+    image: dashjay/baize-executor:${STABLE_DOCKER_TAG:-dev}
+    ports:
+      - "8083:8082"
+    volumes:
+      - ./config.toml:/config.toml

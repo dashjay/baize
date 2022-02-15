@@ -1,0 +1,30 @@
+[server]
+listen_addr = ":8080"
+pprof_addr = ":8082"
+
+[debug]
+log_level = "debug"
+
+[executor]
+listen_addr = ":8080"
+pprof_addr = ":8082"
+work_dir = "/data/workdir"
+
+[caches]
+
+[caches.inmemory_cache]
+enabled = false
+cache_size = 107374182400 # 1024 * 1024 * 1024 * 1
+unit_size_limitation = 200000000000
+
+[caches.disk_cache]
+enabled = true
+cache_addr = "/data/cache"
+cache_size = 85899345920 # 1024 * 1024 * 1024 * 80
+unit_size_limitation = 1048576000 # 1024 * 1024 * 100
+
+[caches.redis_cache]
+enabled = false
+cache_addr = "0.0.0.0:6379"
+cache_size = 4294967296 # 1024 * 1024 * 1024 * 4
+unit_size_limitation = 1048576 # 1024 * 1024 * 1

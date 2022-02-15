@@ -1,0 +1,20 @@
+version: "3"
+
+volumes:
+  remote_cache_data:
+    driver: local
+  redis_data:
+    driver: local
+
+services:
+  redis:
+    image: ${STABLE_DOCKER_REGISTRY:-docker-registry-internal.i.brainpp.cn}/library/redis:6.2.6
+    volumes:
+      - redis_data:/data
+  remote-cache:
+    image: ${STABLE_DOCKER_REGISTRY:-docker-registry-internal.i.brainpp.cn}/brain/baize-remote-cache:${STABLE_DOCKER_TAG:-dev}
+    ports:
+      - "8081:8081"
+    volumes:
+      - remote_cache_data:/data/cache
+      - ./config.toml:/config.toml

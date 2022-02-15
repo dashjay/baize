@@ -1,0 +1,1 @@
+COPY FROM github.com/buildbuddy-io/buildbuddy-foss
