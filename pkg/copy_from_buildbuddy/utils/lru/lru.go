@@ -3,6 +3,7 @@ package lru
 import (
 	"container/list"
 	"errors"
+
 	"github.com/dashjay/baize/pkg/interfaces"
 
 	"github.com/dashjay/baize/pkg/copy_from_buildbuddy/utils/hash"
@@ -65,7 +66,7 @@ func NewLRU(config *Config) (interfaces.LRU, error) {
 }
 
 // keyHash returns a primary key, a conflict key, and a bool indicating if keys
-// were succesfully generated or not.
+// were successfully generated or not.
 func (c *LRU) keyHash(key interface{}) (uint64, uint64, bool) {
 	if key == nil {
 		logrus.Errorf("LRU nil key: %+v", key)

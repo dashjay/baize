@@ -14,9 +14,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/genproto/googleapis/bytestream"
 	"google.golang.org/grpc"
-
-	scpb "github.com/dashjay/baize/pkg/proto/scheduler"
-	"github.com/dashjay/baize/pkg/scheduler"
 )
 
 type ExecutorServer struct {
@@ -43,10 +40,6 @@ func New(cfg *config.Configure) (*ExecutorServer, error) {
 			logrus.Warnf("set level to %s error: %s", debugCfg.LogLevel, err)
 		}
 	}
-	schedulerServer := scheduler.NewServer()
-	schedulerServer.Run(context.Background())
-
-	scpb.RegisterSchedulerServer(s.grpcServer, schedulerServer)
 	repb.RegisterContentAddressableStorageServer(s.grpcServer, s)
 	repb.RegisterExecutionServer(s.grpcServer, s)
 	bytestream.RegisterByteStreamServer(s.grpcServer, s)

@@ -65,6 +65,69 @@ do
 done""",
 )
 
+sh_test(
+    name = "verify-bazel",
+    srcs = ["verify-bazel.sh"],
+    args = [
+        "$(location %s)" % _BUILDIFIER,
+        "$(location %s)" % _GAZELLE,
+        "$(location %s)" % _KAZEL,
+    ],
+    data = [
+        "@//:all-srcs",
+        _BUILDIFIER,
+        _GAZELLE,
+        _KAZEL,
+    ],
+    tags = ["lint"],
+)
+
+sh_test(
+    name = "verify-proto",
+    srcs = ["verify-proto.sh"],
+    args = [
+        "$(locations proto-outs)",
+        go_prefix,
+    ],
+    data = [
+        "proto-outs",
+        "@//:all-srcs",
+    ],
+)
+
+_SHELLCHECK = "//build:shellcheck"
+
+sh_test(
+    name = "verify-shellcheck",
+    srcs = ["verify-shellcheck.sh"],
+    args = [
+        "$(location %s)" % _SHELLCHECK,
+    ],
+    data = [
+        "@//:all-srcs",
+        _SHELLCHECK,
+    ],
+    tags = ["lint"],
+)
+_GOLANGCI_LINT = "//build:golangci-lint"
+
+sh_test(
+    name = "verify-golangci-lint",
+    size = "enormous",
+    srcs = ["verify-golangci-lint.sh"],
+    args = [
+        "$(location %s)" % _GO,
+        "$(location %s)" % _GOLANGCI_LINT,
+    ],
+    data = [
+        "@//:all-srcs",
+        _GO,
+        _GOLANGCI_LINT,
+        "@go_sdk//:files",
+    ],
+    tags = ["lint"],
+)
+
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),

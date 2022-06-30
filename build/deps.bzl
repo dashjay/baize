@@ -81,3 +81,42 @@ cc_library(
     visibility = ["//visibility:public"],
 )""",
     )
+
+    http_archive(
+        name = "shellcheck_linux_amd64",
+        strip_prefix = "shellcheck-stable",
+        sha256 = "d0e9884d2deb14325e7331ff4b0c2c9771a3d49aad653c38ac489c9d27bf7b00",
+        urls = [
+            "https://github.com/koalaman/shellcheck/releases/download/stable/shellcheck-stable.linux.x86_64.tar.xz",
+        ],
+        build_file = "//third_party:export.BUILD",
+    )
+
+    http_archive(
+        name = "shellcheck_darwin_amd64",
+        strip_prefix = "shellcheck-stable",
+        sha256 = "dd4e60844b55e5b77c60abe4b81cb0e2ccb0a3d95ce48c1324cfa0ef916a731a",
+        urls = [
+            "https://github.com/koalaman/shellcheck/releases/download/stable/shellcheck-stable.darwin.x86_64.tar.xz",
+        ],
+        build_file = "//third_party:export.BUILD",
+    )
+    http_archive(
+        name = "golangci-lint_darwin_amd64",
+        sha256 = "6a7c31abca3f51714e5ea1f0aae5dc78d72e7d57d07f02b1a1778219d5648e21",
+        strip_prefix = "golangci-lint-1.29.0-darwin-amd64",
+        urls = [
+            "https://github.com/golangci/golangci-lint/releases/download/v1.29.0/golangci-lint-1.29.0-darwin-amd64.tar.gz",
+        ],
+        build_file = "//third_party:export.BUILD",
+    )
+
+    http_archive(
+        name = "golangci-lint_linux_amd64",
+        sha256 = "98b1eb7c74766079e1deebc3388c13db9bfa9fa0769046d786cf8d1553d7d68b",
+        strip_prefix = "golangci-lint-1.29.0-linux-amd64",
+        urls = [
+            "https://github.com/golangci/golangci-lint/releases/download/v1.29.0/golangci-lint-1.29.0-linux-amd64.tar.gz",
+        ],
+        build_file = "//third_party:export.BUILD",
+    )

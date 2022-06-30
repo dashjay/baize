@@ -16,8 +16,8 @@ import (
 	cmap "github.com/orcaman/concurrent-map"
 
 	"github.com/dashjay/baize/pkg/config"
-	"github.com/dashjay/baize/pkg/interfaces"
 	"github.com/dashjay/baize/pkg/copy_from_buildbuddy/utils/lru"
+	"github.com/dashjay/baize/pkg/interfaces"
 )
 
 const (

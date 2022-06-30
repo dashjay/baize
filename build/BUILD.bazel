@@ -1,3 +1,25 @@
+load(":utils.bzl", "platform_genrule")
+
+config_setting(
+    name = "macos",
+    values = {
+        "apple_platform_type": "macos",
+        "cpu": "darwin",
+    },
+    visibility = ["//visibility:public"],
+)
+
+
+platform_genrule(
+    "shellcheck",
+    suffix = ":shellcheck",
+)
+
+platform_genrule(
+    "golangci-lint",
+    suffix = ":golangci-lint",
+)
+
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),

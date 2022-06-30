@@ -3,7 +3,6 @@ package caches
 import (
 	"context"
 	"fmt"
-	"github.com/dashjay/baize/pkg/interfaces"
 	"io"
 	"io/fs"
 	"io/ioutil"
@@ -11,6 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/dashjay/baize/pkg/interfaces"
 
 	"github.com/dashjay/baize/pkg/utils/status"
 
@@ -21,8 +22,8 @@ import (
 
 	"github.com/dashjay/baize/pkg/config"
 
-	"github.com/dashjay/baize/pkg/copy_from_buildbuddy/utils/lru"
 	"github.com/dashjay/baize/pkg/copy_from_buildbuddy/utils/disk"
+	"github.com/dashjay/baize/pkg/copy_from_buildbuddy/utils/lru"
 )
 
 const (
