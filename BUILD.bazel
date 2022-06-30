@@ -1,0 +1,49 @@
+load("@bazel_gazelle//:def.bzl", "gazelle")
+
+# gazelle:prefix github.com/dashjay/baize
+gazelle(
+    name = "gazelle",
+    command = "fix",
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(
+        ["**"],
+        exclude = [
+            "bazel-*/**",
+            ".git/**",
+        ],
+    ),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//build:all-srcs",
+        "//cmd/baize-executor:all-srcs",
+        "//cmd/baize-server:all-srcs",
+        "//cmd/debug-tools:all-srcs",
+        "//cmd/remote-cache:all-srcs",
+        "//hack:all-srcs",
+        "//pkg/baize:all-srcs",
+        "//pkg/caches:all-srcs",
+        "//pkg/config:all-srcs",
+        "//pkg/copy_from_buildbuddy/utils/disk:all-srcs",
+        "//pkg/copy_from_buildbuddy/utils/hash:all-srcs",
+        "//pkg/copy_from_buildbuddy/utils/lru:all-srcs",
+        "//pkg/copy_from_buildbuddy/utils/random:all-srcs",
+        "//pkg/copy_from_buildbuddy/utils/status:all-srcs",
+        "//pkg/executor:all-srcs",
+        "//pkg/interfaces:all-srcs",
+        "//pkg/proto/scheduler:all-srcs",
+        "//pkg/scheduler:all-srcs",
+        "//pkg/utils:all-srcs",
+        "//third_party:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

@@ -8,8 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
-	"github.com/dashjay/baize/pkg/config"
-	expb "github.com/dashjay/baize/pkg/proto/executor"
 	scpb "github.com/dashjay/baize/pkg/proto/scheduler"
 )
 
@@ -17,17 +15,6 @@ type Server struct {
 	listenAddr string
 	grpcServer *grpc.Server
 	sc         scpb.SchedulerClient
-}
-
-func (s *Server) Execute(ctx context.Context, task *expb.Task) (*expb.TaskResult, error) {
-	panic("implement me")
-}
-
-func New(cfg *config.Configure) (*Server, error) {
-	srv := grpc.NewServer()
-	es := &Server{listenAddr: cfg.GetExecutorConfig().ListenAddr, grpcServer: srv}
-	expb.RegisterExecutorServer(es.grpcServer, es)
-	return es, nil
 }
 
 func (s *Server) Register(localAddr string) error {

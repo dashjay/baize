@@ -1,0 +1,31 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["utils.go"],
+    importpath = "github.com/dashjay/baize/pkg/utils",
+    visibility = ["//visibility:public"],
+    deps = ["@com_github_bazelbuild_remote_apis//build/bazel/remote/execution/v2:go_default_library"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//pkg/utils/bazel:all-srcs",
+        "//pkg/utils/commandutil:all-srcs",
+        "//pkg/utils/digest:all-srcs",
+        "//pkg/utils/healthchecker:all-srcs",
+        "//pkg/utils/remotecacheutils:all-srcs",
+        "//pkg/utils/status:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

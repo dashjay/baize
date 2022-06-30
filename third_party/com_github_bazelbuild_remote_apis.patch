@@ -1,0 +1,17 @@
+diff --git a/build/bazel/remote/execution/v2/BUILD b/build/bazel/remote/execution/v2/BUILD
+index 5cbf4d2..5290dad 100644
+--- a/build/bazel/remote/execution/v2/BUILD
++++ b/build/bazel/remote/execution/v2/BUILD
+@@ -14,10 +14,9 @@ proto_library(
+         "@com_google_protobuf//:duration_proto",
+         "@com_google_protobuf//:timestamp_proto",
+         "@com_google_protobuf//:wrappers_proto",
+-        "@googleapis//:google_api_annotations_proto",
+-        "@googleapis//:google_api_http_proto",
+-        "@googleapis//:google_longrunning_operations_proto",
+-        "@googleapis//:google_rpc_status_proto",
++        "@go_googleapis//google/api:annotations_proto",
++        "@go_googleapis//google/longrunning:longrunning_proto",
++        "@go_googleapis//google/rpc:status_proto",
+     ],
+ )

@@ -1,0 +1,49 @@
+_BUILDIFIER = "@com_github_bazelbuild_buildtools//buildifier"
+
+_GAZELLE = "@bazel_gazelle//cmd/gazelle"
+
+_KAZEL = "@io_k8s_repo_infra//cmd/kazel"
+
+sh_binary(
+    name = "update-bazel",
+    srcs = ["update-bazel.sh"],
+    args = [
+        "$(location %s)" % _BUILDIFIER,
+        "$(location %s)" % _GAZELLE,
+        "$(location %s)" % _KAZEL,
+    ],
+    data = [
+        _BUILDIFIER,
+        _GAZELLE,
+        _KAZEL,
+    ],
+)
+
+_GO = "@go_sdk//:bin/go"
+
+sh_binary(
+    name = "update-deps",
+    srcs = ["update-deps.sh"],
+    args = [
+        "$(location %s)" % _GO,
+        "$(location %s)" % _GAZELLE,
+    ],
+    data = [
+        _GO,
+        _GAZELLE,
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
