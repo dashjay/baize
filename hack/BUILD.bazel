@@ -1,3 +1,5 @@
+go_prefix = "github.com/dashjay/baize"
+
 _BUILDIFIER = "@com_github_bazelbuild_buildtools//buildifier"
 
 _GAZELLE = "@bazel_gazelle//cmd/gazelle"
@@ -32,6 +34,35 @@ sh_binary(
         _GO,
         _GAZELLE,
     ],
+)
+
+sh_binary(
+    name = "update-proto",
+    srcs = ["update-proto.sh"],
+    args = [
+        "$(execpaths proto-outs)",
+        go_prefix,
+    ],
+    data = ["proto-outs"],
+)
+
+filegroup(
+    name = "all-protos",
+    srcs = [
+        "//pkg/proto:all-protos",
+    ],
+)
+
+genrule(
+    name = "genproto",
+    srcs = [":all-protos"],
+    outs = ["proto-outs"],
+    cmd = """for p in $(locations :all-protos)
+do
+    mkdir -p $@/github.com/dashjay/baize && \
+    rp=$$(realpath $$p) && \
+    cp -rf $${rp%.a}_/* $@/
+done""",
 )
 
 filegroup(
