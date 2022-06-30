@@ -1,0 +1,21 @@
+name: baize
+
+on: [push, pull_request]
+
+jobs:
+  all:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: set up mongo community server
+        run: "curl https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu2004-4.4.14.tgz | tar -xzf- -C /tmp/ --strip-component=1 && export PATH=$PATH:/tmp/bin"
+
+      - uses: actions/checkout@v3
+
+      - name: Install Bazel
+        run: ./hack/install-bazel.sh && export PATH="$PATH":"$HOME"/bin
+
+      - name: Test All
+        run: bazel test //...
+
+      - name: Build
+        run: bazel build //...
