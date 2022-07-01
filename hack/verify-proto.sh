@@ -29,7 +29,7 @@ proto_path="$1"/"$2"
 
 ret=0
 while IFS= read -r -d '' f; do
-  project_proto_path=".${f#$proto_path}"
+  project_proto_path=".${f#"$proto_path"}"
   diff -Naupr "$project_proto_path" "$f" || ret=$?
 done <   <(find "$proto_path" -type f -print0)
 

@@ -84,20 +84,20 @@ cc_library(
 
     http_archive(
         name = "shellcheck_linux_amd64",
-        strip_prefix = "shellcheck-stable",
-        sha256 = "d0e9884d2deb14325e7331ff4b0c2c9771a3d49aad653c38ac489c9d27bf7b00",
+        strip_prefix = "shellcheck-v0.8.0",
+        sha256 = "ab6ee1b178f014d1b86d1e24da20d1139656c8b0ed34d2867fbb834dad02bf0a",
         urls = [
-            "https://github.com/koalaman/shellcheck/releases/download/stable/shellcheck-stable.linux.x86_64.tar.xz",
+            "https://github.com/koalaman/shellcheck/releases/download/v0.8.0/shellcheck-v0.8.0.linux.x86_64.tar.xz",
         ],
         build_file = "//third_party:export.BUILD",
     )
 
     http_archive(
         name = "shellcheck_darwin_amd64",
-        strip_prefix = "shellcheck-stable",
-        sha256 = "dd4e60844b55e5b77c60abe4b81cb0e2ccb0a3d95ce48c1324cfa0ef916a731a",
+        strip_prefix = "shellcheck-v0.8.0",
+        sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         urls = [
-            "https://github.com/koalaman/shellcheck/releases/download/stable/shellcheck-stable.darwin.x86_64.tar.xz",
+            "https://github.com/koalaman/shellcheck/releases/download/v0.8.0/shellcheck-v0.8.0.darwin.x86_64.tar.xz",
         ],
         build_file = "//third_party:export.BUILD",
     )
