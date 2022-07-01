@@ -95,7 +95,7 @@ cc_library(
     http_archive(
         name = "shellcheck_darwin_amd64",
         strip_prefix = "shellcheck-v0.8.0",
-        sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        sha256 = "e065d4afb2620cc8c1d420a9b3e6243c84ff1a693c1ff0e38f279c8f31e86634",
         urls = [
             "https://github.com/koalaman/shellcheck/releases/download/v0.8.0/shellcheck-v0.8.0.darwin.x86_64.tar.xz",
         ],
