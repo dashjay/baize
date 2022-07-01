@@ -5,7 +5,7 @@ run:
   skip-dirs:
     - ^\.git
     - ^bazel-.+
-    - ^pkg/copy_from_buildbuddy
+    - pkg/copy_from_buildbuddy
   skip-files:
     - zz_generated\.(api\.register)|(conversion)|(deepcopy)|(defaults)\.go$
 

@@ -1,14 +1,6 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
-    name = "random",
-    srcs = ["random.go"],
-    importpath = "github.com/buildbuddy-io/buildbuddy/server/util/random",
-    visibility = ["//visibility:public"],
-    deps = ["//server/util/log"],
-)
-
-go_library(
     name = "go_default_library",
     srcs = ["random.go"],
     importpath = "github.com/dashjay/baize/pkg/copy_from_buildbuddy/utils/random",

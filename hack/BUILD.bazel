@@ -109,6 +109,7 @@ sh_test(
     ],
     tags = ["lint"],
 )
+
 _GOLANGCI_LINT = "//build:golangci-lint"
 
 sh_test(

@@ -9,7 +9,6 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
-
 platform_genrule(
     "shellcheck",
     suffix = ":shellcheck",
