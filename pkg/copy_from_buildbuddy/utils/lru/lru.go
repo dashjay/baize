@@ -3,6 +3,7 @@ package lru
 import (
 	"container/list"
 	"errors"
+	"sync"
 
 	"github.com/dashjay/baize/pkg/interfaces"
 
@@ -34,6 +35,7 @@ type LRU struct {
 	sizeFn      SizeFn
 	evictList   *list.List
 	items       map[uint64][]*list.Element
+	itemsLock   *sync.RWMutex
 	onEvict     EvictedCallback
 	maxSize     int64
 	currentSize int64
@@ -59,6 +61,7 @@ func NewLRU(config *Config) (interfaces.LRU, error) {
 		maxSize:     config.MaxSize,
 		evictList:   list.New(),
 		items:       make(map[uint64][]*list.Element),
+		itemsLock:   &sync.RWMutex{},
 		onEvict:     config.OnEvict,
 		sizeFn:      config.SizeFn,
 	}
@@ -90,6 +93,8 @@ func (c *LRU) Metrics() string {
 
 // Purge is used to completely clear the cache.
 func (c *LRU) Purge() {
+	c.itemsLock.Lock()
+	defer c.itemsLock.Unlock()
 	for k, vals := range c.items {
 		for _, v := range vals {
 			if c.onEvict != nil {
@@ -238,6 +243,8 @@ func (c *LRU) removeOldest() {
 }
 
 func (c *LRU) lookupItem(key, conflictKey uint64) (*list.Element, bool) {
+	c.itemsLock.RLock()
+	defer c.itemsLock.RUnlock()
 	entries, ok := c.items[key]
 	if !ok {
 		return nil, false
@@ -253,6 +260,8 @@ func (c *LRU) lookupItem(key, conflictKey uint64) (*list.Element, bool) {
 // addElement adds a new item to the cache. It does not perform any
 // size checks.
 func (c *LRU) addItem(key, conflictKey uint64, value interface{}, front bool) {
+	c.itemsLock.Lock()
+	defer c.itemsLock.Unlock()
 	// Add new item
 	kv := &Entry{key, conflictKey, value}
 	var element *list.Element
@@ -266,6 +275,8 @@ func (c *LRU) addItem(key, conflictKey uint64, value interface{}, front bool) {
 }
 
 func (c *LRU) removeItem(key, conflictKey uint64) {
+	c.itemsLock.Lock()
+	defer c.itemsLock.Unlock()
 	entries, ok := c.items[key]
 	if !ok {
 		return
