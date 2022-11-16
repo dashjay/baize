@@ -19,6 +19,18 @@ This project provide a minimum implement of [bazel remote execution](https://git
 
 I also expect this project can be complete gradually, and can be used in the production environment. 
 
+## Design
+![Baize](./doc/baize.drawio.png)
+
+In shorts, Bazel Remote Executor exports two server for clients. 
+1. Cache Server receives all materials, contains user src files, user action info, result of the action from executors, etc.
+2. Execute Server can make the execution from users to Executors.
+
+Cache Server has more than one backend. For small object, we use memory as backend;for medium object, we use seaweedfs as backend; for big object, we use oss.
+
+
+Execute Server do actions from clients to executors.
+
 ## Development
 
 modify codes in `cmd` and `pkg`, and run following script
