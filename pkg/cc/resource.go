@@ -1,9 +1,7 @@
-package cache_server
+package cc
 
 import (
 	"fmt"
-	"github.com/dashjay/baize/pkg/baize"
-	"github.com/dashjay/baize/pkg/cc"
 	"strconv"
 	"strings"
 
@@ -12,8 +10,8 @@ import (
 )
 
 var (
-	ResourceReadFormatStr  = fmt.Sprintf("[<instance-name>/]%s/<hash>/<size>[/filename]", cc.ResourceNameType)
-	ResourceWriteFormatStr = fmt.Sprintf("[<instance-name>/]%s/<uuid>/%s/<hash>/<size>[/filename]", cc.ResourceNameAction, cc.ResourceNameType)
+	ResourceReadFormatStr  = fmt.Sprintf("[<instance-name>/]%s/<hash>/<size>[/filename]", ResourceNameType)
+	ResourceWriteFormatStr = fmt.Sprintf("[<instance-name>/]%s/<uuid>/%s/<hash>/<size>[/filename]", ResourceNameAction, ResourceNameType)
 )
 
 type Resource struct {
@@ -36,7 +34,7 @@ func GetReadResourceName(instance, hash string, size int64, fname string) (strin
 	if instance != "" {
 		rname += fmt.Sprintf("%s/", instance)
 	}
-	rname += fmt.Sprintf("%s/%s/%d", cc.ResourceNameType, hash, size)
+	rname += fmt.Sprintf("%s/%s/%d", ResourceNameType, hash, size)
 	if fname != "" {
 		rname += fmt.Sprintf("/%s", fname)
 	}
@@ -60,11 +58,11 @@ func ParseReadResource(name string) (*Resource, error) {
 	}
 
 	var instance, hash, sizeStr string
-	if elems[0] == cc.ResourceNameType {
-		instance = cc.DefaultInstanceName
+	if elems[0] == ResourceNameType {
+		instance = DefaultInstanceName
 		hash = elems[1]
 		sizeStr = elems[2]
-	} else if elems[1] == cc.ResourceNameType && len(elems) > 3 {
+	} else if elems[1] == ResourceNameType && len(elems) > 3 {
 		instance = elems[0]
 		hash = elems[2]
 		sizeStr = elems[3]
@@ -81,7 +79,7 @@ func GetWriteResourceName(instance, _uuid, hash string, size int64, fname string
 	if instance != "" {
 		wname += fmt.Sprintf("%s/", instance)
 	}
-	wname += fmt.Sprintf("%s/%s/%s/%s/%d", cc.ResourceNameAction, _uuid, cc.ResourceNameType, hash, size)
+	wname += fmt.Sprintf("%s/%s/%s/%s/%d", ResourceNameAction, _uuid, ResourceNameType, hash, size)
 	if fname != "" {
 		wname += fmt.Sprintf("/%s", fname)
 	}
@@ -107,17 +105,17 @@ func ParseWriteResource(name string) (*Resource, error) {
 	var id, instance, hash, sizeStr string
 	var rest []string
 
-	if elems[0] == cc.ResourceNameAction {
-		instance = cc.DefaultInstanceName
+	if elems[0] == ResourceNameAction {
+		instance = DefaultInstanceName
 		rest = elems[1:]
-	} else if elems[1] == cc.ResourceNameAction && len(elems) > 4 {
+	} else if elems[1] == ResourceNameAction && len(elems) > 4 {
 		instance = elems[0]
 		rest = elems[2:]
 	} else {
 		return nil, resourceError("resource action not found", name, ResourceWriteFormatStr)
 	}
 
-	if rest[1] != cc.ResourceNameType {
+	if rest[1] != ResourceNameType {
 		return nil, resourceError("resource type not found", name, ResourceWriteFormatStr)
 	}
 
@@ -144,7 +142,7 @@ func ParseResource(instance, id, hash, sizeStr, name, format string) (*Resource,
 		return nil, resourceError("size value could not be parsed as int64", name, format)
 	}
 
-	if !baize.IsValidDigest(hash, size) {
+	if !IsValidDigest(hash, size) {
 		return nil, resourceError("digest hash/size invalid", name, format)
 	}
 
@@ -154,4 +152,9 @@ func ParseResource(instance, id, hash, sizeStr, name, format string) (*Resource,
 // helper for descriptive resource error messages
 func resourceError(reason, name, format string) error {
 	return fmt.Errorf("invalid resource name format (%s) from: %q, expected: %q", reason, name, format)
+}
+
+func IsValidDigest(hash string, size int64) bool {
+	// TODO: use inner functions to check sha256 hex size
+	return len(hash) == 64 && size >= -1
 }

@@ -7,7 +7,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/caches:go_default_library",
-        "//pkg/config:go_default_library",
+        "//pkg/cc:go_default_library",
         "//pkg/interfaces:go_default_library",
         "//pkg/utils/healthchecker:go_default_library",
         "//pkg/utils/remotecacheutils:go_default_library",

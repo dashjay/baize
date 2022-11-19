@@ -5,6 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"io"
+
 	repb "github.com/bazelbuild/remote-apis/build/bazel/remote/execution/v2"
 	"github.com/dashjay/baize/pkg/cc"
 	"github.com/dashjay/baize/pkg/interfaces"
@@ -12,13 +14,15 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/genproto/googleapis/bytestream"
 	"google.golang.org/protobuf/proto"
-	"io"
 )
 
 type Server struct {
 	cache interfaces.Cache
 }
 
+func New(cache interfaces.Cache) *Server {
+	return &Server{cache: cache}
+}
 func (c *Server) GetActionResult(ctx context.Context, request *repb.GetActionResultRequest) (*repb.ActionResult, error) {
 	acCache, err := c.cache.WithIsolation(ctx, interfaces.ActionCacheType, request.GetInstanceName())
 	if err != nil {
@@ -52,7 +56,7 @@ func (c *Server) Read(request *bytestream.ReadRequest, server bytestream.ByteStr
 	logrus.Tracef("invoke read from %s", request.GetResourceName())
 	ctx := context.Background()
 	// Parse resource name per Bazel API specification
-	resource, err := ParseReadResource(request.GetResourceName())
+	resource, err := cc.ParseReadResource(request.GetResourceName())
 	if err != nil {
 		return status.InvalidArgumentErrorf("failed to parse resource name: [%s]", request.GetResourceName())
 	}
@@ -105,7 +109,7 @@ func (c *Server) Write(server bytestream.ByteStream_WriteServer) error {
 	if err != nil {
 		return status.InternalErrorf("fail to call stream.Recv(): %s", err)
 	}
-	resource, err := ParseWriteResource(request.GetResourceName())
+	resource, err := cc.ParseWriteResource(request.GetResourceName())
 	if err != nil {
 		return status.InvalidArgumentErrorf("failed to parse resource name: [%s]", request.GetResourceName())
 	}

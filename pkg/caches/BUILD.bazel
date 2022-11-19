@@ -14,7 +14,7 @@ go_library(
     importpath = "github.com/dashjay/baize/pkg/caches",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/config:go_default_library",
+        "//pkg/cc:go_default_library",
         "//pkg/copy_from_buildbuddy/utils/disk:go_default_library",
         "//pkg/copy_from_buildbuddy/utils/lru:go_default_library",
         "//pkg/interfaces:go_default_library",
@@ -35,7 +35,7 @@ go_test(
     ],
     embed = [":go_default_library"],
     deps = [
-        "//pkg/config:go_default_library",
+        "//pkg/cc:go_default_library",
         "//pkg/interfaces:go_default_library",
         "//pkg/utils:go_default_library",
         "@com_github_bazelbuild_remote_apis//build/bazel/remote/execution/v2:go_default_library",

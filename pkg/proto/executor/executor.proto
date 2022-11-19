@@ -1,0 +1,33 @@
+syntax = "proto3";
+option go_package = "github.com/dashjay/baize/pkg/proto/executor;executor";
+
+import "google/rpc/status.proto";
+import "build/bazel/remote/execution/v2/remote_execution.proto";
+
+package executor;
+
+message Property {
+    int32 Cpu = 1;
+    int64 Memory = 2;
+}
+
+message HeartBeatReq {
+    string executor_id = 1;
+}
+
+message HeartBeatResp{
+    Property propertys = 1;
+}
+
+message ExecuteReq{
+    build.bazel.remote.execution.v2.Action action = 1;
+}
+
+message ExecuteResp{
+    build.bazel.remote.execution.v2.ActionResult ar = 2; 
+}
+
+service ExecutorServer{
+    rpc HeartBeat(HeartBeatReq) returns (HeartBeatResp){};
+    rpc Execute(ExecuteReq)returns(ExecuteResp){};
+}

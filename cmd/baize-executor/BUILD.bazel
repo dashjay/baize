@@ -6,7 +6,7 @@ go_library(
     importpath = "github.com/dashjay/baize/cmd/baize-executor",
     visibility = ["//visibility:private"],
     deps = [
-        "//pkg/config:go_default_library",
+        "//pkg/cc:go_default_library",
         "@com_github_spf13_cobra//:go_default_library",
         "@io_k8s_kubernetes//pkg/util/rlimit:go_default_library",
     ],

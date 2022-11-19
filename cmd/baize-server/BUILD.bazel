@@ -7,7 +7,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/baize:go_default_library",
-        "//pkg/config:go_default_library",
+        "//pkg/cc:go_default_library",
         "@com_github_spf13_cobra//:go_default_library",
         "@io_k8s_kubernetes//pkg/util/rlimit:go_default_library",
     ],

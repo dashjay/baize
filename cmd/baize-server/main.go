@@ -1,9 +1,6 @@
 package main
 
 import (
-	"context"
-	"net/http"
-
 	"github.com/spf13/cobra"
 	"k8s.io/kubernetes/pkg/util/rlimit"
 
@@ -19,7 +16,7 @@ func init() {
 		panic(err)
 	}
 }
-func NewBazelExecutorCommand(ctx context.Context) *cobra.Command {
+func NewBazelExecutorCommand() *cobra.Command {
 	cmd := &cobra.Command{}
 	cfgPath := cmd.Flags().String("config", "/config.toml", "config file to use")
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
@@ -30,11 +27,6 @@ func NewBazelExecutorCommand(ctx context.Context) *cobra.Command {
 		s, err := baize.New(cfg)
 		if err != nil {
 			return err
-		}
-		if pprofAddr := cfg.GetExecutorConfig().PprofAddr; pprofAddr != "" {
-			go func() {
-				http.ListenAndServe(pprofAddr, nil)
-			}()
 		}
 		return s.Run()
 	}
