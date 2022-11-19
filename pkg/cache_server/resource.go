@@ -1,7 +1,9 @@
-package baize
+package cache_server
 
 import (
 	"fmt"
+	"github.com/dashjay/baize/pkg/baize"
+	"github.com/dashjay/baize/pkg/cc"
 	"strconv"
 	"strings"
 
@@ -10,8 +12,8 @@ import (
 )
 
 var (
-	ResourceReadFormatStr  string = fmt.Sprintf("[<instance-name>/]%s/<hash>/<size>[/filename]", ResourceNameType)
-	ResourceWriteFormatStr string = fmt.Sprintf("[<instance-name>/]%s/<uuid>/%s/<hash>/<size>[/filename]", ResourceNameAction, ResourceNameType)
+	ResourceReadFormatStr  = fmt.Sprintf("[<instance-name>/]%s/<hash>/<size>[/filename]", cc.ResourceNameType)
+	ResourceWriteFormatStr = fmt.Sprintf("[<instance-name>/]%s/<uuid>/%s/<hash>/<size>[/filename]", cc.ResourceNameAction, cc.ResourceNameType)
 )
 
 type Resource struct {
@@ -28,13 +30,13 @@ func (r *Resource) StoreName() string {
 	return r.Digest.GetHash()
 }
 
-// Return a valid read resource string based on individual components. Errors on invalid inputs.
+// GetReadResourceName return a valid read resource string based on individual components. Errors on invalid inputs.
 func GetReadResourceName(instance, hash string, size int64, fname string) (string, error) {
 	rname := ""
 	if instance != "" {
 		rname += fmt.Sprintf("%s/", instance)
 	}
-	rname += fmt.Sprintf("%s/%s/%d", ResourceNameType, hash, size)
+	rname += fmt.Sprintf("%s/%s/%d", cc.ResourceNameType, hash, size)
 	if fname != "" {
 		rname += fmt.Sprintf("/%s", fname)
 	}
@@ -48,7 +50,7 @@ func GetDefaultReadResourceName(hash string, size int64) (string, error) {
 	return GetReadResourceName("", hash, size, "")
 }
 
-// Parses a name string from the Read API into a Resource for bazel artifacts.
+// ParseReadResource Parses a name string from the Read API into a Resource for bazel artifacts.
 // Valid read format: "[<instance>/]blobs/<hash>/<size>[/<filename>]"
 // Scoot does not currently use/track the filename portion of resource names
 func ParseReadResource(name string) (*Resource, error) {
@@ -58,11 +60,11 @@ func ParseReadResource(name string) (*Resource, error) {
 	}
 
 	var instance, hash, sizeStr string
-	if elems[0] == ResourceNameType {
-		instance = DefaultInstanceName
+	if elems[0] == cc.ResourceNameType {
+		instance = cc.DefaultInstanceName
 		hash = elems[1]
 		sizeStr = elems[2]
-	} else if elems[1] == ResourceNameType && len(elems) > 3 {
+	} else if elems[1] == cc.ResourceNameType && len(elems) > 3 {
 		instance = elems[0]
 		hash = elems[2]
 		sizeStr = elems[3]
@@ -73,13 +75,13 @@ func ParseReadResource(name string) (*Resource, error) {
 	return ParseResource(instance, "", hash, sizeStr, name, ResourceReadFormatStr)
 }
 
-// Return a valid write resource string based on individual components. Errors on invalid inputs
+// GetWriteResourceName Return a valid write resource string based on individual components. Errors on invalid inputs
 func GetWriteResourceName(instance, _uuid, hash string, size int64, fname string) (string, error) {
 	wname := ""
 	if instance != "" {
 		wname += fmt.Sprintf("%s/", instance)
 	}
-	wname += fmt.Sprintf("%s/%s/%s/%s/%d", ResourceNameAction, _uuid, ResourceNameType, hash, size)
+	wname += fmt.Sprintf("%s/%s/%s/%s/%d", cc.ResourceNameAction, _uuid, cc.ResourceNameType, hash, size)
 	if fname != "" {
 		wname += fmt.Sprintf("/%s", fname)
 	}
@@ -105,17 +107,17 @@ func ParseWriteResource(name string) (*Resource, error) {
 	var id, instance, hash, sizeStr string
 	var rest []string
 
-	if elems[0] == ResourceNameAction {
-		instance = DefaultInstanceName
+	if elems[0] == cc.ResourceNameAction {
+		instance = cc.DefaultInstanceName
 		rest = elems[1:]
-	} else if elems[1] == ResourceNameAction && len(elems) > 4 {
+	} else if elems[1] == cc.ResourceNameAction && len(elems) > 4 {
 		instance = elems[0]
 		rest = elems[2:]
 	} else {
 		return nil, resourceError("resource action not found", name, ResourceWriteFormatStr)
 	}
 
-	if rest[1] != ResourceNameType {
+	if rest[1] != cc.ResourceNameType {
 		return nil, resourceError("resource type not found", name, ResourceWriteFormatStr)
 	}
 
@@ -142,7 +144,7 @@ func ParseResource(instance, id, hash, sizeStr, name, format string) (*Resource,
 		return nil, resourceError("size value could not be parsed as int64", name, format)
 	}
 
-	if !IsValidDigest(hash, size) {
+	if !baize.IsValidDigest(hash, size) {
 		return nil, resourceError("digest hash/size invalid", name, format)
 	}
 

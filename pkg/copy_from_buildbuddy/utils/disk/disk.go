@@ -13,7 +13,6 @@ import (
 	"github.com/dashjay/baize/pkg/copy_from_buildbuddy/utils/random"
 	"github.com/dashjay/baize/pkg/copy_from_buildbuddy/utils/status"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/sys/unix"
 )
 
 func EnsureDirectoryExists(dir string) error {
@@ -180,17 +179,4 @@ type DirUsage struct {
 	UsedBytes  uint64
 	FreeBytes  uint64
 	AvailBytes uint64
-}
-
-func GetDirUsage(path string) (*DirUsage, error) {
-	fs := unix.Statfs_t{}
-	if err := unix.Statfs(path, &fs); err != nil {
-		return nil, err
-	}
-	return &DirUsage{
-		TotalBytes: fs.Blocks * uint64(fs.Bsize),
-		UsedBytes:  (fs.Blocks - fs.Bfree) * uint64(fs.Bsize),
-		FreeBytes:  fs.Bfree * uint64(fs.Bsize),
-		AvailBytes: fs.Bavail * uint64(fs.Bsize),
-	}, nil
 }

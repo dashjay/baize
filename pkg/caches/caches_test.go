@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/dashjay/baize/pkg/config"
+	"github.com/dashjay/baize/pkg/cc"
 	"github.com/dashjay/baize/pkg/interfaces"
 	"github.com/dashjay/baize/pkg/utils"
 )
@@ -38,7 +38,7 @@ var _ = Describe("test all kind of cache", func() {
 	})
 	Context("disk cache test", func() {
 		BeforeEach(func() {
-			originCache = NewDiskCache(&config.Cache{
+			originCache = NewDiskCache(&cc.Cache{
 				Enabled:   true,
 				CacheSize: 65535,
 				CacheAddr: tempdir,
@@ -48,11 +48,11 @@ var _ = Describe("test all kind of cache", func() {
 	})
 	Context("composed cache test", func() {
 		BeforeEach(func() {
-			a := NewDiskCache(&config.Cache{
+			a := NewDiskCache(&cc.Cache{
 				CacheSize: 65535,
 				CacheAddr: tempdir,
 			})
-			b := NewMemoryCache(&config.Cache{
+			b := NewMemoryCache(&cc.Cache{
 				CacheSize: 65535,
 			})
 			originCache = NewComposedCache(a, b, ModeReadThrough|ModeWriteThrough)
@@ -61,7 +61,7 @@ var _ = Describe("test all kind of cache", func() {
 	})
 	Context("memory cache", func() {
 		BeforeEach(func() {
-			originCache = NewMemoryCache(&config.Cache{
+			originCache = NewMemoryCache(&cc.Cache{
 				CacheSize: 1024 * 1024 * 1024,
 			})
 		})

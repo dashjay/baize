@@ -18,7 +18,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/sirupsen/logrus"
 
-	"github.com/dashjay/baize/pkg/config"
+	"github.com/dashjay/baize/pkg/cc"
 	"github.com/dashjay/baize/pkg/interfaces"
 )
 
@@ -76,7 +76,7 @@ func (r *RedisCache) Size() int64 {
 	return int64(i)
 }
 
-func NewRedisCache(cfg *config.Cache) interfaces.Cache {
+func NewRedisCache(cfg *cc.Cache) interfaces.Cache {
 	c := redis.NewClient(&redis.Options{Addr: cfg.CacheAddr, DB: 1})
 	c.ConfigSet(context.TODO(), "maxmemory", fmt.Sprintf("%d", cfg.CacheSize))
 	usl := cfg.UnitSizeLimitation

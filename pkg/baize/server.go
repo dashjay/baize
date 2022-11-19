@@ -6,7 +6,7 @@ import (
 	"net"
 
 	"github.com/dashjay/baize/pkg/caches"
-	"github.com/dashjay/baize/pkg/config"
+	"github.com/dashjay/baize/pkg/cc"
 	"github.com/dashjay/baize/pkg/interfaces"
 
 	repb "github.com/bazelbuild/remote-apis/build/bazel/remote/execution/v2"
@@ -23,7 +23,7 @@ type ExecutorServer struct {
 	cache      interfaces.Cache
 }
 
-func New(cfg *config.Configure) (*ExecutorServer, error) {
+func New(cfg *cc.Configure) (*ExecutorServer, error) {
 	executorCfg := cfg.GetExecutorConfig()
 	s := &ExecutorServer{
 		grpcServer: grpc.NewServer(),

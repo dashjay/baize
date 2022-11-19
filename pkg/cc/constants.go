@@ -1,4 +1,4 @@
-package baize
+package cc
 
 const (
 	// Instance-related constants

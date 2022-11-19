@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/spf13/cobra"
@@ -9,7 +10,7 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/dashjay/baize/pkg/baize"
-	"github.com/dashjay/baize/pkg/config"
+	"github.com/dashjay/baize/pkg/cc"
 )
 
 func init() {
@@ -18,11 +19,11 @@ func init() {
 		panic(err)
 	}
 }
-func NewBazelExecutorCommand() *cobra.Command {
+func NewBazelExecutorCommand(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{}
 	cfgPath := cmd.Flags().String("config", "/config.toml", "config file to use")
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		cfg, err := config.NewConfigFromFile(*cfgPath)
+		cfg, err := cc.NewConfigFromFile(*cfgPath)
 		if err != nil {
 			return err
 		}

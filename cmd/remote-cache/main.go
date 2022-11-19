@@ -16,7 +16,7 @@ import (
 	"k8s.io/kubernetes/pkg/util/rlimit"
 
 	"github.com/dashjay/baize/pkg/caches"
-	"github.com/dashjay/baize/pkg/config"
+	"github.com/dashjay/baize/pkg/cc"
 	"github.com/dashjay/baize/pkg/interfaces"
 	rc "github.com/dashjay/baize/pkg/utils/remotecacheutils"
 )
@@ -118,7 +118,7 @@ func NewRemoteCacheCommand() *cobra.Command {
 	cmd := &cobra.Command{}
 	cfgPath := cmd.Flags().String("config", "/config.toml", "config file to use")
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		cfg, err := config.NewConfigFromFile(*cfgPath)
+		cfg, err := cc.NewConfigFromFile(*cfgPath)
 		if err != nil {
 			return err
 		}

@@ -1,4 +1,4 @@
-package config
+package cc
 
 import (
 	"fmt"

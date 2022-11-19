@@ -3,7 +3,7 @@ package caches
 import (
 	repb "github.com/bazelbuild/remote-apis/build/bazel/remote/execution/v2"
 
-	"github.com/dashjay/baize/pkg/config"
+	"github.com/dashjay/baize/pkg/cc"
 	"github.com/dashjay/baize/pkg/interfaces"
 )
 
@@ -11,7 +11,7 @@ func isDigestValid(digest *repb.Digest) bool {
 	return digest != nil && len(digest.GetHash()) == 64
 }
 
-func GenerateCacheFromConfig(cacheCfg *config.CacheConfig) interfaces.Cache {
+func GenerateCacheFromConfig(cacheCfg *cc.CacheConfig) interfaces.Cache {
 	var out interfaces.Cache
 	updateCache := func(cache interfaces.Cache, mode CacheMode) {
 		if out == nil {

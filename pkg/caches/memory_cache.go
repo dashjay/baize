@@ -15,7 +15,7 @@ import (
 	repb "github.com/bazelbuild/remote-apis/build/bazel/remote/execution/v2"
 	cmap "github.com/orcaman/concurrent-map"
 
-	"github.com/dashjay/baize/pkg/config"
+	"github.com/dashjay/baize/pkg/cc"
 	"github.com/dashjay/baize/pkg/copy_from_buildbuddy/utils/lru"
 	"github.com/dashjay/baize/pkg/interfaces"
 )
@@ -71,7 +71,7 @@ type MapEntry struct {
 	Size int64
 }
 
-func NewMemoryCache(cfg *config.Cache) interfaces.Cache {
+func NewMemoryCache(cfg *cc.Cache) interfaces.Cache {
 	c := cmap.New()
 	l, err := lru.NewLRU(&lru.Config{
 		MaxSize: cfg.CacheSize,

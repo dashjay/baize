@@ -20,7 +20,7 @@ import (
 	repb "github.com/bazelbuild/remote-apis/build/bazel/remote/execution/v2"
 	"github.com/sirupsen/logrus"
 
-	"github.com/dashjay/baize/pkg/config"
+	"github.com/dashjay/baize/pkg/cc"
 
 	"github.com/dashjay/baize/pkg/copy_from_buildbuddy/utils/disk"
 	"github.com/dashjay/baize/pkg/copy_from_buildbuddy/utils/lru"
@@ -101,7 +101,7 @@ func (c *DiskCache) key(d *repb.Digest) (string, error) {
 	return key, nil
 }
 
-func NewDiskCache(cfg *config.Cache) interfaces.Cache {
+func NewDiskCache(cfg *cc.Cache) interfaces.Cache {
 	if cfg.CacheAddr == "" {
 		logrus.Panic("empty rootDir")
 	}
