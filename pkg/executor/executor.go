@@ -18,22 +18,22 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/genproto/googleapis/bytestream"
-	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 )
 
 type Worker struct {
 	workDir string
 	bytswr  bytestream.ByteStreamClient
+	casCli  repb.ContentAddressableStorageClient
 }
 
 var _ executor.ExecutorServerServer = (*Worker)(nil)
 
-func (w *Worker) HeartBeat(ctx context.Context, req *executor.HeartBeatReq, opts ...grpc.CallOption) (*executor.HeartBeatResp, error) {
+func (w *Worker) HeartBeat(ctx context.Context, req *executor.HeartBeatReq) (*executor.HeartBeatResp, error) {
 	return nil, nil
 }
 
-func (w *Worker) Execute(ctx context.Context, req *executor.ExecuteReq, opts ...grpc.CallOption) (*executor.ExecuteResp, error) {
+func (w *Worker) Execute(ctx context.Context, req *executor.ExecuteReq) (*executor.ExecuteResp, error) {
 	if err := w.ensureFiles(ctx, req.Action.GetInputRootDigest(), w.workDir); err != nil {
 		logrus.WithError(err).Errorf("ensureFiles")
 		return nil, err

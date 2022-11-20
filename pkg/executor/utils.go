@@ -1,14 +1,13 @@
 package executor
 
 import (
+	"bytes"
 	"context"
 	"io"
 	"os"
 	"path/filepath"
 
 	repb "github.com/bazelbuild/remote-apis/build/bazel/remote/execution/v2"
-	"github.com/dashjay/baize/pkg/cc"
-	"github.com/dashjay/baize/pkg/interfaces"
 	"github.com/dashjay/baize/pkg/utils/digest"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/genproto/googleapis/bytestream"
@@ -36,16 +35,12 @@ func (s *Worker) ensureFiles(ctx context.Context, rootDigest *repb.Digest, base 
 }
 
 func (s *Worker) writeFiles(ctx context.Context, files []*repb.FileNode, base string) error {
-	casCache, err := s.cache.WithIsolation(ctx, interfaces.CASCacheType, "")
-	if err != nil {
-		return err
-	}
-	for _, file := range files {
+	writeFile := func(file *repb.FileNode, r io.Reader) error {
 		fn := filepath.Join(base, file.GetName())
 		if _, err := os.Stat(fn); err != nil && !os.IsNotExist(err) {
 			return err
 		} else if err == nil {
-			continue
+			return nil
 		}
 
 		if err := os.MkdirAll(filepath.Dir(fn), os.ModePerm); err != nil {
@@ -59,45 +54,72 @@ func (s *Worker) writeFiles(ctx context.Context, files []*repb.FileNode, base st
 		if err != nil {
 			return err
 		}
-		d := file.GetDigest()
-		// Get file contents
-		if d.GetHash() != cc.EmptySha {
-			r, err := casCache.Reader(ctx, d, 0)
-			if err != nil {
-				logrus.WithError(err).Error("writeFiles")
-				return err
-			}
-			io.Copy(fi, r)
-			r.Close()
+		defer fi.Close()
+		_, err = io.Copy(fi, r)
+		return err
+	}
+	var smallFiles = make(map[string]*repb.FileNode)
+	var largeFiles = make(map[string]*repb.FileNode)
+	for i := range files {
+		if files[i].Digest.SizeBytes > 4*1024*1024 {
+			largeFiles[files[i].Digest.Hash] = files[i]
+		} else {
+			smallFiles[files[i].Digest.Hash] = files[i]
 		}
-		fi.Close()
+	}
+
+	if len(smallFiles) > 0 {
+		var smallDigestsBundle []*repb.Digest
+		for k := range smallFiles {
+			smallDigestsBundle = append(smallDigestsBundle, &repb.Digest{Hash: k})
+		}
+		batchReadResp, err := s.casCli.BatchReadBlobs(ctx, &repb.BatchReadBlobsRequest{Digests: smallDigestsBundle})
+		if err != nil {
+			return err
+		}
+		for _, body := range batchReadResp.Responses {
+			if fileNode, ok := smallFiles[body.Digest.Hash]; ok {
+				err = writeFile(fileNode, bytes.NewReader(body.Data))
+				if err != nil {
+					return err
+				}
+			} else {
+				logrus.Warnln("file not exists in response")
+			}
+		}
+	}
+
+	if len(largeFiles) > 0 {
+		logrus.Warnln("large file")
 	}
 	return nil
 }
 
 func (s *Worker) getDirectoryFromDigest(ctx context.Context, d *repb.Digest) (*repb.Directory, error) {
-	logrus.Tracef("invoke getDirectoryFromDigest with %s", d.GetHash())
-	casCache, err := s.cache.WithIsolation(ctx, interfaces.CASCacheType, "")
+	content, err := s.ReadCacheTiny(ctx, d)
 	if err != nil {
 		return nil, err
 	}
-	data, err := casCache.Get(ctx, d)
+	var dir repb.Directory
+	err = proto.Unmarshal(content, &dir)
 	if err != nil {
 		return nil, err
 	}
-	out := &repb.Directory{}
-	if err := proto.Unmarshal(data, out); err != nil {
-		return nil, err
-	}
-	return out, nil
+	return &dir, nil
 }
 func (s *Worker) ReadCacheTiny(ctx context.Context, d *repb.Digest) ([]byte, error) {
-	resName,err := digest.NewResourceName(d,)
-	if err!=nil{
-		return nil,err
-	}
-	cli, err := s.bytswr.Read(ctx,&bytestream.ReadRequest{ResourceName: })
+	resName := digest.NewResourceName(d, "")
+	cli, err := s.bytswr.Read(ctx, &bytestream.ReadRequest{ResourceName: resName.DownloadString()})
 	if err != nil {
 		return nil, err
 	}
+	resp, err := cli.Recv()
+	if err != nil {
+		return nil, err
+	}
+	err = cli.CloseSend()
+	if err != nil {
+		return nil, err
+	}
+	return resp.Data, nil
 }
