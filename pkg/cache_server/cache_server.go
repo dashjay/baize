@@ -104,6 +104,7 @@ func (c *Server) Read(request *bytestream.ReadRequest, server bytestream.ByteStr
 }
 
 func (c *Server) Write(server bytestream.ByteStream_WriteServer) error {
+	logrus.Traceln("bytestream.ByteStream_WriteServer.Write")
 	ctx := context.Background()
 	request, err := server.Recv()
 	if err != nil {

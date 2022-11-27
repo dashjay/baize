@@ -30,7 +30,7 @@ var _ = Describe("test all kind of cache", func() {
 		Expect(err).To(BeNil())
 	})
 	JustBeforeEach(func() {
-		cache, err = originCache.WithIsolation(context.Background(), interfaces.ActionCacheType, "test")
+		cache, err = originCache.WithIsolation(context.Background(), interfaces.CASCacheType, "test")
 		Expect(err).To(BeNil())
 	})
 	AfterEach(func() {

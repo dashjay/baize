@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/dashjay/baize/pkg/utils/status"
+	"github.com/sirupsen/logrus"
 
 	"github.com/dashjay/baize/pkg/utils"
 
@@ -147,6 +148,7 @@ func (m *MemoryCache) GetMulti(ctx context.Context, digests []*repb.Digest) (map
 }
 
 func (m *MemoryCache) Set(ctx context.Context, d *repb.Digest, data []byte) error {
+	logrus.WithField("digest", d.String()).WithField("type", m.cacheType.Prefix()).Traceln("memoryCache set")
 	key, err := m.key(d)
 	if err != nil {
 		return err
@@ -220,5 +222,6 @@ type setOnClose struct {
 }
 
 func (d *setOnClose) Close() error {
+	logrus.Traceln("memoryCache setOnClose close")
 	return d.c(d.Buffer)
 }

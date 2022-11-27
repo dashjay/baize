@@ -225,6 +225,7 @@ func (c *DiskCache) FindMissing(ctx context.Context, digests []*repb.Digest) ([]
 }
 
 func (c *DiskCache) Get(ctx context.Context, d *repb.Digest) ([]byte, error) {
+	logrus.WithField("digest", d.String()).Traceln("diskCache get")
 	key, err := c.key(d)
 	if err != nil {
 		return nil, err
@@ -348,6 +349,7 @@ func (d *dbWriteOnClose) Close() error {
 }
 
 func (c *DiskCache) Writer(ctx context.Context, d *repb.Digest) (io.WriteCloser, error) {
+	logrus.WithField("digest", d.String()).Traceln("new diskCache writer")
 	key, err := c.key(d)
 	if err != nil {
 		return nil, err
@@ -365,6 +367,7 @@ func (c *DiskCache) Writer(ctx context.Context, d *repb.Digest) (io.WriteCloser,
 				key:         key,
 				sizeBytes:   totalBytesWritten,
 			})
+			logrus.WithField("digest", d.String()).WithField("written", totalBytesWritten).Traceln("diskCache  writer closed")
 			return nil
 		},
 	}, nil

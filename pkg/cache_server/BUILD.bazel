@@ -1,8 +1,8 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["cache_servers.go"],
+    srcs = ["cache_server.go"],
     importpath = "github.com/dashjay/baize/pkg/cache_server",
     visibility = ["//visibility:public"],
     deps = [
@@ -28,4 +28,21 @@ filegroup(
     srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["caches_server_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//pkg/caches:go_default_library",
+        "//pkg/cc:go_default_library",
+        "//pkg/interfaces:go_default_library",
+        "//pkg/utils/digest:go_default_library",
+        "@com_github_bazelbuild_remote_apis//build/bazel/remote/execution/v2:go_default_library",
+        "@com_github_onsi_ginkgo//:go_default_library",
+        "@com_github_onsi_gomega//:go_default_library",
+        "@go_googleapis//google/bytestream:bytestream_go_proto",
+        "@org_golang_google_grpc//:go_default_library",
+    ],
 )
